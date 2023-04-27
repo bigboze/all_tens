@@ -63,26 +63,36 @@ def get_ordered_expressions(nums: list) -> list:
             expressions.append(f'({nums[0]}{op[0]}{nums[1]}){op[1]}({nums[2]}{op[2]}{nums[3]})')
     return expressions
 
-def solve_all_tens(nums: list):
+def solve_all_tens(nums: list, analyze=False):
     # Check if each expression evaluates to 1 through 10 and print the unique expressions for each result
     results = {}
     nums = num_combinations(nums)
+    
+    num_expressions = 0
+    
+    numPossibilities = {}
+    for i in range(1, 11):
+        numPossibilities[i] = 0
+    
     # start with single digit expressions 
     for perm in nums:
         perm = list(perm)
         exprs = get_ordered_expressions(perm)
+        num_expressions += len(exprs)
         for expr in exprs:
             # Evaluate expression and check if it equals the target number
             try:
                 res = round(eval(expr), 2)
-                if res in range(1, 11) and res not in results:
-                    results[int(res)] = expr
+                if res in range(1, 11):
+                    if res not in results:
+                        results[int(res)] = expr
+                    numPossibilities[int(res)] += 1
             except ZeroDivisionError:
                 continue
                 
-            if len(results) == 10:
+            if len(results) == 10 and not analyze:
                 return True, results
-    return False, results
+    return False, results, numPossibilities, num_expressions
 
 # Produce all possible combinations of 4 numbers from 1 to 9,
 # Attempt to solve each combination, and count the number of solvable and unsolvable problems
@@ -129,10 +139,15 @@ if __name__ == '__main__':
     nums = [int(num) for num in sys.argv[1:]]
     
     if(len(nums) == 4):
-        solved, results = solve_all_tens(nums)
+        solved, results, possibilities, num_expressions = solve_all_tens(nums, analyze=True)
+        
+        p = sum(possibilities.values())
 
         for key, val in sorted(results.items()):
-            print(val + ' = ' + str(key))
+            percentage = round((possibilities[key]/(num_expressions - possibilities[key])*100), 2)
+            print(f'{val}  = {str(key)} ({possibilities[key]} possibilities, {percentage}% of total)')
+
+        print(f'{p} total valid possibilities in {num_expressions} expressions ({round((p/(num_expressions - p)*100), 2)}%)')
     else:
         count_solvable_combinations_parallel()
 
