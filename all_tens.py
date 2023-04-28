@@ -8,39 +8,27 @@ def num_combinations(nums: list) -> set:
   
     return singles
 
-def get_operations(nums: list) -> list:
+def get_ordered_expressions(nums: list) -> list:
+    # return a list of combination of ordered expressions
+    
     # *10+ operation is used to pair numbers together.
     # for example the digits 1 2 -> 1*10+2 -> 12
     operators = ['+', '-', '*', '/', '*10+']
     expressions = []
+    A, B, C, D = nums
     
-    for i in range(2, len(nums) + 1):
-        expressions.append(list(itertools.product(operators, repeat=i)))
-    return expressions
-
-def get_ordered_expressions(nums: list) -> list:
-    operations = get_operations(nums)
-    expressions = []
-  
-    if len(nums) == 2:
-        for op in operations[0]:
-            expressions.append(f'{nums[0]}{op[0]}{nums[1]}')
-  
-    if len(nums) == 3:
-        for op in operations[1]:
-            expressions.append(f'{nums[0]}{op[0]}{nums[1]}{op[1]}{nums[2]}')
-            expressions.append(f'({nums[0]}{op[0]}{nums[1]}){op[1]}{nums[2]}')
-            expressions.append(f'{nums[0]}{op[0]}({nums[1]}{op[1]}{nums[2]})')
-
-    if len(nums) == 4:
-        for op in operations[2]:
-            expressions.append(f'{nums[0]}{op[0]}{nums[1]}{op[1]}{nums[2]}{op[2]}{nums[3]}')
-            expressions.append(f'({nums[0]}{op[0]}{nums[1]}{op[1]}{nums[2]}){op[2]}{nums[3]}')
-            expressions.append(f'{nums[0]}{op[0]}({nums[1]}{op[1]}{nums[2]}{op[2]}{nums[3]})')
-            expressions.append(f'({nums[0]}{op[0]}{nums[1]}){op[1]}{nums[2]}{op[2]}{nums[3]}')
-            expressions.append(f'{nums[0]}{op[0]}({nums[1]}{op[1]}{nums[2]}){op[2]}{nums[3]}')
-            expressions.append(f'{nums[0]}{op[0]}{nums[1]}{op[1]}({nums[2]}{op[2]}{nums[3]})')
-            expressions.append(f'({nums[0]}{op[0]}{nums[1]}){op[1]}({nums[2]}{op[2]}{nums[3]})')
+    # Generate all possible combinations of operators and numbers with order of operations
+    # 5^3 * 7 = 875 expressions per number combination.
+    # todo, replace this with DP, fold the '*10+' to preserve reading of expression
+    for op in itertools.product(operators, repeat=len(nums) - 1):
+        o1, o2, o3 = op
+        expressions.append(f'{A}{o1}{B}{o2}{C}{o3}{D}')
+        expressions.append(f'({A}{o1}{B}{o2}{C}){o3}{D}')
+        expressions.append(f'{A}{o1}({B}{o2}{C}{o3}{D})')
+        expressions.append(f'({A}{o1}{B}){o2}{C}{o3}{D}')
+        expressions.append(f'{A}{o1}({B}{o2}{C}){o3}{D}')
+        expressions.append(f'{A}{o1}{B}{o2}({C}{o3}{D})')
+        expressions.append(f'({A}{o1}{B}){o2}({C}{o3}{D})')
     return expressions
 
 def solve_all_tens(nums: list, analyze=False):
