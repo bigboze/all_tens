@@ -1,37 +1,17 @@
 import itertools
+import multiprocessing
 import sys
 
 def num_combinations(nums: list) -> set:
     # Generate all possible permutations of the input numbers (4!)
     singles = set(itertools.permutations(nums))
-
-    # generate all possible pairs of numbers and pairs and singles
-    # AB, CD and AB, C, D
-    pairs = set()
-    for A, B, C, D in singles:
-        pairs.add((int(str(A) + str(B)), int(str(C) + str(D))))
-        pairs.add((int(str(A) + str(B)), C, D))
-        pairs.add((A, B, int(str(C) + str(D))))
-        pairs.add((int(str(C) + str(D)), int(str(B) + str(A))))
-        pairs.add((int(str(D) + str(C)), B, A))
-        pairs.add((D, C, int(str(B) + str(A))))
-        pairs.add((A, int(str(B) + str(C)), D))
-        pairs.add((D, int(str(B) + str(C)), A))
-        pairs.add((A, int(str(C) + str(B)), D))
-        pairs.add((D, int(str(C) + str(B)), A))
-
-    # generate all possible 3 digit and single decimal digit numbers
-    # ABC, D and A, D, ABC
-    triples = set()
-    for A, B, C, D in singles:
-        val = (int(str(A) + str(B) + str(C)), D)
-        triples.add(val)
-        triples.add((val[1], val[0]))
   
-    return singles.union(pairs).union(triples)
+    return singles
 
 def get_operations(nums: list) -> list:
-    operators = ['+', '-', '*', '/']
+    # *10+ operation is used to pair numbers together.
+    # for example the digits 1 2 -> 1*10+2 -> 12
+    operators = ['+', '-', '*', '/', '*10+']
     expressions = []
     
     for i in range(2, len(nums) + 1):
@@ -67,7 +47,6 @@ def solve_all_tens(nums: list, analyze=False):
     # Check if each expression evaluates to 1 through 10 and print the unique expressions for each result
     results = {}
     nums = num_combinations(nums)
-    
     num_expressions = 0
     
     numPossibilities = {}
@@ -89,23 +68,19 @@ def solve_all_tens(nums: list, analyze=False):
                     numPossibilities[int(res)] += 1
             except ZeroDivisionError:
                 continue
-                
             if len(results) == 10 and not analyze:
                 return True, results
     return False, results, numPossibilities, num_expressions
 
 # Produce all possible combinations of 4 numbers from 1 to 9,
 # Attempt to solve each combination, and count the number of solvable and unsolvable problems
-import multiprocessing
-import functools
 
 def solve_chunk(nums):
     solvable = 0
     unsolvable = 0
     for num in nums:
         solved = solve_all_tens(num)
-        
-        if solved:
+        if solved[0]:
             solvable += 1
         else:
             unsolvable += 1
